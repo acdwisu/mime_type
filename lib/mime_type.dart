@@ -1,6 +1,7 @@
 library mime_type;
 
 import 'dart:collection';
+import 'package:string_similarity/string_similarity.dart';
 
 // get MIME type from file name (returns null if there is no such extension)
 String? mime(String? fileName) {
@@ -22,12 +23,21 @@ String? mimeFromExtension(String extension) => _mimeMaps[extension];
 
 // gets extension from MIME type (returns null if there is no such mime type)
 String? extensionFromMime(String mime) {
-  for (final key in _mimeMaps.keys) {
-    if (_mimeMaps[key] == mime.toLowerCase()) {
-      return key;
-    }
+  String _mime = mime.toLowerCase();
+
+  final temp = _mimeMaps.entries.where((element) => element.value == _mime);
+
+  if(temp.isEmpty) {
+    return null;
   }
-  return null;
+
+  if(temp.length>1) {
+    final result = _mime.bestMatch(temp.map((e) => e.key).toList());
+
+    return result.bestMatch.target;
+  } else {
+    return temp.first.key;
+  }
 }
 
 // hash maps much faster
